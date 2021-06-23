@@ -1,0 +1,26 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    _instanceof:
+        Dev\ApiDocBundle\Parser\ComponentParserInterface:
+            tags: [ 'dev_api_doc.component_parser' ]
+        Dev\ApiDocBundle\Parser\OperationParserInterface:
+            tags: [ 'dev_api_doc.operation_parser' ]
+
+    Dev\ApiDocBundle\:
+        resource: '../*'
+
+    component.registry: '@Dev\ApiDocBundle\Registry\ComponentRegistry'
+    operation.registry: '@Dev\ApiDocBundle\Registry\OperationRegistry'
+
+    Dev\ApiDocBundle\Describer\ComponentDescriber:
+        arguments:
+            $parsers: !tagged_iterator { tag: 'dev_api_doc.component_parser' }
+            $registry: '@component.registry'
+    Dev\ApiDocBundle\Describer\OperationDescriber:
+        arguments:
+            $parsers: !tagged_iterator { tag: 'dev_api_doc.operation_parser' }
+            $registry: '@operation.registry'

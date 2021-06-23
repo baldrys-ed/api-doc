@@ -1,0 +1,16 @@
+{
+  "name": "dev/openapi-adr-bundle",
+  "type": "symfony-bundle",
+  "description": "Api documentation generator",
+  "keywords": [],
+  "license": "MIT",
+  "require": {
+    "php": "^8.0",
+    "ext-json": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Dev\\ApiDocBundle\\": "src/"
+    }
+  }
+}
