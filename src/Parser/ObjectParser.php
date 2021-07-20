@@ -48,7 +48,7 @@ class ObjectParser implements ComponentParserInterface
         return $model;
     }
 
-    private function convertType(string $type): string
+    private function convertType(?string $type): string
     {
         if ($type === 'int' || $type === '?int') {
             return 'integer';
@@ -56,10 +56,13 @@ class ObjectParser implements ComponentParserInterface
         if ($type === 'float' || $type === '?float') {
             return 'number';
         }
+        if ($type === 'iterable') {
+            return 'array';
+        }
         if ($type === '?string' || $type === 'string') {
             return 'string';
         }
 
-        return $type;
+        return 'string';
     }
 }

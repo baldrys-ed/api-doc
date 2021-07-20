@@ -90,8 +90,12 @@ class FormParser implements ComponentParserInterface
                 $property->type = 'string';
 
                 if ($constraint = $this->findConstraint($constraints, Length::class)) {
-                    $property->attributes['minLength'] = $constraint->min;
-                    $property->attributes['maxLength'] = $constraint->max;
+                    if (null !== $constraint->min){
+                        $property->attributes['minLength'] = $constraint->min;
+                    }
+                    if (null !== $constraint->max){
+                        $property->attributes['maxLength'] = $constraint->max;
+                    }
                 }
 
                 break;
@@ -110,9 +114,19 @@ class FormParser implements ComponentParserInterface
                 }
 
                 if ($constraint = $this->findConstraint($constraints, Range::class)) {
-                    $property->attributes['minimum'] = $constraint->min;
-                    $property->attributes['maximum'] = $constraint->max;
+                    if (null !== $constraint->min){
+                        $property->attributes['minimum'] = $constraint->min;
+                    }
+                    if (null !== $constraint->max){
+                        $property->attributes['maximum'] = $constraint->max;
+                    }
                 }
+
+                break;
+            }
+
+            if ('file' === $blockPrefix) {
+                $property->type = 'string';
 
                 break;
             }

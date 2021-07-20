@@ -81,6 +81,9 @@ class ViewParser implements ComponentParserInterface
         if ($this === 'float') {
             return 'number';
         }
+        if ($type === 'iterable') {
+            return 'array';
+        }
 
         return $type;
     }
