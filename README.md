@@ -12,10 +12,11 @@ This guide provides step-by-step instructions for setting up the Amananet PHP ba
 5. [Image Processing Libraries](#image-processing-libraries)
 6. [Nginx with Brotli](#nginx-with-brotli)
 7. [PostgreSQL Installation](#postgresql-installation)
-8. [Elasticsearch](#elasticsearch)
-9. [System Libraries for PDF/HTML Generation](#system-libraries-for-pdfhtml-generation)
-10. [Project Setup](#project-setup)
-11. [Symfony Commands](#symfony-commands)
+8. [Permissions for Project Directories](#permissions-for-project-directories)
+9. [Elasticsearch](#elasticsearch)
+10. [System Libraries for PDF Generation](#system-libraries-for-pdf-generation)
+11. [Project Setup](#project-setup)
+12. [Symfony Commands](#symfony-commands)
 ---
 
 ## System Requirements
@@ -111,7 +112,10 @@ libjpeg-dev \
 libpng-dev \
 libtiff-dev \
 libgif-dev;
+```
 
+### Adding repositories
+```bash
 sudo cat <<'END' >> /etc/apt/sources.list && apt update;
 deb http://mirror.yandex.ru/ubuntu/ noble main
 deb-src http://mirror.yandex.ru/ubuntu/ noble main
@@ -236,7 +240,7 @@ sudo systemctl start elasticsearch
 sudo ufw allow 9200
 ```
 
-## System Libraries for PDF/HTML and Headless Chrome
+## System Libraries for PDF and Headless Chrome
 ```bash
 sudo apt install -y \
 gconf-service libasound2 libatk1.0-0 libatk-bridge2.0-0 libc6 libcairo2 libcups2 \
