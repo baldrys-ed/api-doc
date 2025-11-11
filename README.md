@@ -240,7 +240,7 @@ sudo systemctl start elasticsearch
 sudo ufw allow 9200
 ```
 
-## System Libraries for PDF and Headless Chrome
+## System Libraries for PDF Generation
 ```bash
 sudo apt install -y \
 gconf-service libasound2 libatk1.0-0 libatk-bridge2.0-0 libc6 libcairo2 libcups2 \
