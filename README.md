@@ -20,13 +20,13 @@ This guide provides step-by-step instructions for setting up the Amananet PHP ba
 ---
 
 ## System Requirements
-- Ubuntu 22.04+ (or compatible Debian-based system)
 - PHP 8.4
 - PostgreSQL
 - RabbitMQ
 - Nginx
 - Elasticsearch
 - Required PHP extensions and libraries (listed below)
+- Node 12
 ---
 
 ## PHP Installation
@@ -239,6 +239,10 @@ sudo systemctl enable elasticsearch
 sudo systemctl start elasticsearch
 sudo ufw allow 9200
 ```
+Update password
+`usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic`
+Add set memory limits
+`/etc/elasticsearch/jvm.options.d`
 
 ## System Libraries for PDF Generation
 ```bash
