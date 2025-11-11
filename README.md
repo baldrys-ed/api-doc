@@ -9,10 +9,10 @@ This guide provides step-by-step instructions for setting up the Amananet PHP ba
 2. [PHP Installation](#php-installation)
 3. [Composer Installation](#composer-installation)
 4. [RabbitMQ and Erlang](#rabbitmq-and-erlang)
-5. [PostgreSQL Installation](#postgresql-installation)
+5. [Image Processing Libraries](#image-processing-libraries)
 6. [Nginx with Brotli](#nginx-with-brotli)
-7. [Elasticsearch](#elasticsearch)
-8. [Image Processing Libraries](#image-processing-libraries)
+7. [PostgreSQL Installation](#postgresql-installation)
+8. [Elasticsearch](#elasticsearch)
 9. [System Libraries for PDF/HTML Generation](#system-libraries-for-pdfhtml-generation)
 10. [Project Setup](#project-setup)
 11. [Symfony Commands](#symfony-commands)
@@ -29,7 +29,6 @@ This guide provides step-by-step instructions for setting up the Amananet PHP ba
 ---
 
 ## PHP Installation
-
 ```bash
 sudo add-apt-repository ppa:ondrej/php -y
 apt update && apt -y upgrade;
@@ -61,7 +60,6 @@ redis-server;
 ```
 
 ## Composer Installation
-
 ```bash
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 php -r "if (hash_file('sha384', 'composer-setup.php') === '<SHA384_HASH>') { echo 'Installer verified'.PHP_EOL; } else { echo 'Installer corrupt'.PHP_EOL; unlink('composer-setup.php'); exit(1); }"
@@ -76,6 +74,7 @@ sudo mv composer.phar /usr/local/bin/composer
 ```bash
 curl -1sLf "https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA" | sudo gpg --dearmor | sudo tee /usr/share/keyrings/com.rabbitmq.team.gpg > /dev/null
 ```
+
 ### Add repository
 ```bash
 sudo tee /etc/apt/sources.list.d/rabbitmq.list <<EOF
@@ -104,19 +103,71 @@ rabbitmqctl set_permissions -p / system ".*" ".*" ".*"
 systemctl status rabbitmq-server.service
 ```
 
-## PostgreSQL Installation
+## Image Processing Libraries
+### Installing libraries
 ```bash
-sudo apt install -y wget ca-certificates
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
-sudo apt update
-sudo apt install -y postgresql postgresql-contrib
+apt install -y \
+libjpeg-dev \
+libpng-dev \
+libtiff-dev \
+libgif-dev;
 
-su - postgres;
-psql;
-create role app with login password '<password>';
-alter role app createdb;
-CREATE DATABASE "app" WITH OWNER "app" ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0;
+sudo cat <<'END' >> /etc/apt/sources.list && apt update;
+deb http://mirror.yandex.ru/ubuntu/ noble main
+deb-src http://mirror.yandex.ru/ubuntu/ noble main
+END
+```
+
+### WebP
+```bash
+WEBP_VERSION=1.4.0;
+cd /tmp && wget https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$WEBP_VERSION.tar.gz ;
+tar xvzf libwebp-$WEBP_VERSION.tar.gz;
+cd libwebp-$WEBP_VERSION;
+./configure;
+make;
+make install;
+echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib" >> ~/.zshrc;
+```
+
+### ImageMagick
+```bash
+IMAGE_MAGICK_VERSION=7.1.2-1
+cd /tmp
+wget https://imagemagick.org/download/ImageMagick-$IMAGE_MAGICK_VERSION.tar.gz
+tar xvzf ImageMagick-$IMAGE_MAGICK_VERSION.tar.gz
+cd ImageMagick-$IMAGE_MAGICK_VERSION
+sudo apt-get build-dep imagemagick -y
+./configure --with-png --with-jpeg --with-zlib --with-webp
+make
+sudo make install
+sudo ldconfig /usr/local/lib
+```
+
+### PHP Imagick Extension
+```bash
+PHP_IMAGICK_VERSION=3.8.0
+cd /tmp
+wget https://pecl.php.net/get/imagick-$PHP_IMAGICK_VERSION.tgz
+tar zxvf imagick-$PHP_IMAGICK_VERSION.tgz
+cd imagick-$PHP_IMAGICK_VERSION
+phpize
+./configure
+make
+sudo make install
+
+sudo ln -s /etc/php/8.4/mods-available/imagick.ini /etc/php/8.4/fpm/conf.d/20-imagick.ini
+sudo ln -s /etc/php/8.4/mods-available/imagick.ini /etc/php/8.4/cli/conf.d/20-imagick.ini
+```
+
+### Mozjpeg
+```bash
+apt -y install cmake autoconf automake libtool nasm make pkg-config libpng-dev pngquant;
+cd /tmp && git clone https://github.com/mozilla/mozjpeg.git ;
+cd /tmp/mozjpeg;
+mkdir build && cd build;
+cmake -G"Unix Makefiles" ../;
+make && make install;
 ```
 
 ## Nginx with Brotli
@@ -148,6 +199,21 @@ sudo systemctl restart nginx.service
 nginx -t
 ```
 
+## PostgreSQL Installation
+```bash
+sudo apt install -y wget ca-certificates
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+sudo apt update
+sudo apt install -y postgresql postgresql-contrib
+
+su - postgres;
+psql;
+create role app with login password '<password>';
+alter role app createdb;
+CREATE DATABASE "app" WITH OWNER "app" ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0;
+```
+
 ## Permissions for Project Directories
 ```bash
 HTTPDUSER=$(ps axo user,comm | grep -E '[n]ginx|[w]ww-data' | head -1 | cut -d\  -f1)
@@ -169,38 +235,6 @@ sudo systemctl enable elasticsearch
 sudo systemctl start elasticsearch
 sudo ufw allow 9200
 ```
-## Image Processing Libraries
-
-### ImageMagick
-```bash
-IMAGE_MAGICK_VERSION=7.1.2-1
-cd /tmp
-wget https://imagemagick.org/download/ImageMagick-$IMAGE_MAGICK_VERSION.tar.gz
-tar xvzf ImageMagick-$IMAGE_MAGICK_VERSION.tar.gz
-cd ImageMagick-$IMAGE_MAGICK_VERSION
-sudo apt-get build-dep imagemagick -y
-./configure --with-png --with-jpeg --with-zlib --with-webp
-make
-sudo make install
-sudo ldconfig /usr/local/lib
-```
-
-### PHP Imagick Extension
-```bash
-PHP_IMAGICK_VERSION=3.8.0
-cd /tmp
-wget https://pecl.php.net/get/imagick-$PHP_IMAGICK_VERSION.tgz
-tar zxvf imagick-$PHP_IMAGICK_VERSION.tgz
-cd imagick-$PHP_IMAGICK_VERSION
-phpize
-./configure
-make
-sudo make install
-
-sudo ln -s /etc/php/8.4/mods-available/imagick.ini /etc/php/8.4/fpm/conf.d/20-imagick.ini
-sudo ln -s /etc/php/8.4/mods-available/imagick.ini /etc/php/8.4/cli/conf.d/20-imagick.ini
-sudo systemctl restart php8.4-fpm.service
-```
 
 ## System Libraries for PDF/HTML and Headless Chrome
 ```bash
@@ -214,11 +248,6 @@ libxrender1 libxss1 libxtst6 libgbm1 ca-certificates fonts-liberation lsb-releas
 
 ## Project Setup
 
-### Create project directories
-```bash
-mkdir -p ~/amananet/backend ~/amananet/frontend
-cd ~/amananet/backend
-```
 ### Git setup
 ```bash
 git init
@@ -226,15 +255,17 @@ git remote add origin git@github.com:aliensource-org/amananet-backend.git
 git fetch origin
 git checkout -b main --track origin/main
 ```
+
 ### Create necessary directories
 `mkdir -p public/uploads public/media var`
+
 ### Install dependencies, run migrations, and clear cache
 `make install`
 
 ## Symfony Commands
 
 ### Create an admin user
-`bin/console user:create:admin -u admin@amananet.com -p "password123"`
+`bin/console user:create:admin -u admin@amananet.com -p "<password>"`
 
 ### Generate sitemaps
 `bin/console sitemap:generate`
