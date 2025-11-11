@@ -249,6 +249,19 @@ libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libx11-6 libx11-xcb1 libxcb1 \
 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 \
 libxrender1 libxss1 libxtst6 libgbm1 ca-certificates fonts-liberation lsb-release xdg-utils wget
 ```
+Ensure Node.js version 12 is installed:
+```bash
+nvm install 12
+nvm use 12
+node -v
+```
+Expected output: v12.x.x
+
+### Install Node.js packages:
+```bash
+cd ~/amananet/backend/order_invoice
+npm install
+```
 
 ## Project Setup
 
