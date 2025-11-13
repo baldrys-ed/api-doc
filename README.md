@@ -16,7 +16,7 @@ This guide provides step-by-step instructions for setting up the Stefa PHP backe
 9. [Machine Learning Environment Setup](#machine-learning-environment-setup)
 10. [Metabase Setup](#metabase-setup)
 11. [Headless Chromium Setup](#headless-chromium-setup)
-12. [FFmpeg Setup] (#ffmpeg-setup)
+12. [FFmpeg Setup](#ffmpeg-setup)
 13. [Project Setup](#project-setup)
 ---
 
