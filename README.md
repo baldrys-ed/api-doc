@@ -1,6 +1,6 @@
-# Vulkan Installation Guide
+# Media-alean Installation Guide
 
-This guide provides step-by-step instructions for setting up the Vulkan.
+This guide provides step-by-step instructions for setting up the Media-alean.
 
 ---
 
@@ -13,13 +13,13 @@ This guide provides step-by-step instructions for setting up the Vulkan.
 6. [Nginx with Brotli](#nginx-with-brotli)
 7. [PostgreSQL Installation](#postgresql-installation)
 8. [Permissions for Project Directories](#permissions-for-project-directories)
-9. [Telegram Bot Setup](#telegram-bot-setup)
-10. [FFmpeg Setup](#ffmpeg-setup)
+9. [FFmpeg Setup](#ffmpeg-setup)
+10. [Authorization Setup](#authorization-setup)
 11. [Project Setup](#project-setup)
 ---
 
 ## System Requirements
-- PHP 8.3
+- PHP 8.2
 - PostgreSQL
 - RabbitMQ
 - Nginx
@@ -32,27 +32,27 @@ apt update && apt -y upgrade;
 sudo apt install -y \
 acl \
 unzip \
-php8.3-zip \
-php8.3-pdo \
-php8.3-mysql \
-php8.3-igbinary \
-php8.3-redis \
-php8.3-apcu \
-php8.3-fpm \
-php8.3-dom \
-php8.3-xsl \
-php8.3-xml \
-php8.3-intl \
-php8.3-opcache \
-php8.3-imagick \
-php8.3-dev \
-php8.3-curl \
-php8.3-ds \
-php8.3-mbstring \
-php8.3-bcmath \
-php8.3-gd \
-php8.3-pgsql \
-php8.3-amqp \
+php8.2-zip \
+php8.2-pdo \
+php8.2-mysql \
+php8.2-igbinary \
+php8.2-redis \
+php8.2-apcu \
+php8.2-fpm \
+php8.2-dom \
+php8.2-xsl \
+php8.2-xml \
+php8.2-intl \
+php8.2-opcache \
+php8.2-imagick \
+php8.2-dev \
+php8.2-curl \
+php8.2-ds \
+php8.2-mbstring \
+php8.2-bcmath \
+php8.2-gd \
+php8.2-pgsql \
+php8.2-amqp \
 redis-server;
 ```
 
@@ -156,8 +156,8 @@ phpize
 make
 sudo make install
 
-sudo ln -s /etc/php/8.3/mods-available/imagick.ini /etc/php/8.3/fpm/conf.d/20-imagick.ini
-sudo ln -s /etc/php/8.3/mods-available/imagick.ini /etc/php/8.3/cli/conf.d/20-imagick.ini
+sudo ln -s /etc/php/8.2/mods-available/imagick.ini /etc/php/8.2/fpm/conf.d/20-imagick.ini
+sudo ln -s /etc/php/8.2/mods-available/imagick.ini /etc/php/8.2/cli/conf.d/20-imagick.ini
 ```
 
 ### Mozjpeg
@@ -218,19 +218,12 @@ CREATE DATABASE "app" WITH OWNER "app" ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8
 ```bash
 HTTPDUSER=$(ps axo user,comm | grep -E '[n]ginx|[w]ww-data' | head -1 | cut -d\  -f1)
 
-setfacl -dR -m u:"$HTTPDUSER":rwX -m u:app:rwX /home/app/vulkan/var \
-/home/app/vulkan/public/media /home/app/vulkan/public/uploads
+setfacl -dR -m u:"$HTTPDUSER":rwX -m u:app:rwX /home/app/media-alean/backend/var \
+/home/app/media-alean/backend/public/media /home/app/media-alean/backend/public/uploads
 
-setfacl -R -m u:"$HTTPDUSER":rwX -m u:app:rwX /home/app/vulkan/var \
-/home/app/vulkan/public/media /home/app/vulkan/public/uploads
+setfacl -R -m u:"$HTTPDUSER":rwX -m u:app:rwX /home/app/media-alean/var \
+/home/app/media-alean/backend/public/media /home/app/media-alean/backend/public/uploads
 ```
-
-## Telegram bot Setup
-1. Create a bot using BotFather
-2. Get the API token for your bot.
-3. Set up a webhook with the following URL: `https://<your-domain>/api/telegram/webhook`
-For local development, you can use ngrok `ngrok http 8000`
-4. Add these variables in the cms /abc/configuration/update
 
 ## FFmpeg Setup
 Install FFmpeg and FFprobe. For Ubuntu/Debian:
@@ -244,12 +237,37 @@ FFMPEG_BIN=/usr/bin/ffmpeg
 FFPROBE_BIN=/usr/bin/ffprobe
 ```
 
+## Authorization Setup
+### Telegram Authorization
+To enable Telegram login, you must create a Telegram bot and configure it properly:
+1. Open @BotFather
+2. Create a new bot using the command /newbot.
+3. Copy the bot token provided by BotFather.
+4. Set the following environment variables in your .env file:
+```bash
+TELEGRAM_BOT_TOKEN=<bot_token>
+TELEGRAM_BOT_URL=<bot_username>
+TELEGRAM_LOGIN_URL=<server_domain>/telegram/authentication
+```
+5. Set up the bot webhook:
+```bash
+curl -X POST "https://api.telegram.org/bot<your_bot_token>/setWebhook" \
+     -d "url=<your_server_domain>/api/telegram/webhook"
+```
+### VK Authorization
+1. Go to VK Developers
+2. Obtain your VK App ID and Api Secret Key.
+3. Add the following environment variables to your .env file:
+```bash
+VK_APP_ID=<app_id>
+VK_API_SECRET=<api_secret>
+```
 ## Project Setup
 
 ### Git setup
 ```bash
 git init
-git remote add origin git@github.com:aliensource-org/vulcan-srv.git
+git remote add origin git@gitlab-io.alean.ru:media-alean/media-alean-backend.git
 git fetch origin
 git checkout -b main --track origin/main
 ```
@@ -257,8 +275,8 @@ git checkout -b main --track origin/main
 ### Create necessary directories
 ```bash
 mkdir -p public/uploads \
-         public/media/persons \
-         var/model/face/train
+         public/media \
+         var
 ```
 
 ### Install dependencies, run migrations, and clear cache
