@@ -260,7 +260,7 @@ sudo apt install -y build-essential cmake libopenblas-dev liblapack-dev libx11-d
 `train.py` Trains a KNN classifier on preprocessed face encodings and saves the model to disk
 
 ## Metabase setup
-### Install Java
+Install Java
 ```bash
 sudo apt update
 sudo apt install -y openjdk-17-jre
@@ -278,7 +278,7 @@ sudo wget https://downloads.metabase.com/v0.50.5/metabase.jar -O /opt/metabase/m
 sudo chown metabase:metabase /opt/metabase/metabase.jar
 ```
 
-### Create a systemd service
+Create a systemd service
 ```bash
 sudo nano /etc/systemd/system/metabase.service
 ```
@@ -304,7 +304,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable metabase
 sudo systemctl start metabase
 ```
-### Access Metabase
+Access Metabase
 Metabase runs on port 3000 by default.
 ```bash
 http://your-server-ip:3000
@@ -318,7 +318,7 @@ sudo apt update
 sudo apt install -y chromium-browser chromium-driver fonts-liberation
 sudo apt install -y libx11-dev libnss3 libxss1 libappindicator3-1 libatk-bridge2.0-0 libgtk-3-0
 ```
-### Verify installation
+Verify installation
 ```bash
 chromium-browser --version
 chromedriver --version
