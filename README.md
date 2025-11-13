@@ -1,6 +1,6 @@
-# Amananet Backend Installation Guide
+# Stefa Backend Installation Guide
 
-This guide provides step-by-step instructions for setting up the Amananet PHP backend environment.
+This guide provides step-by-step instructions for setting up the Stefa PHP backend environment.
 
 ---
 
@@ -13,20 +13,20 @@ This guide provides step-by-step instructions for setting up the Amananet PHP ba
 6. [Nginx with Brotli](#nginx-with-brotli)
 7. [PostgreSQL Installation](#postgresql-installation)
 8. [Permissions for Project Directories](#permissions-for-project-directories)
-9. [Elasticsearch](#elasticsearch)
-10. [System Libraries for PDF Generation](#system-libraries-for-pdf-generation)
-11. [Project Setup](#project-setup)
-12. [Symfony Commands](#symfony-commands)
+9. [Machine Learning Environment Setup](#machine-learning-environment-setup)
+10. [Metabase Setup](#metabase-setup)
+11. [Headless Chromium Setup](#headless-chromium-setup)
+12. [Project Setup](#project-setup)
 ---
 
 ## System Requirements
-- PHP 8.4
+- PHP 8.2
 - PostgreSQL
 - RabbitMQ
 - Nginx
-- Elasticsearch
-- Required PHP extensions and libraries (listed below)
-- Node 12
+- Python3
+- Headless chrome
+- Metabase
 ---
 
 ## PHP Installation
@@ -36,27 +36,27 @@ apt update && apt -y upgrade;
 sudo apt install -y \
 acl \
 unzip \
-php8.4-zip \
-php8.4-pdo \
-php8.4-mysql \
-php8.4-igbinary \
-php8.4-redis \
-php8.4-apcu \
-php8.4-fpm \
-php8.4-dom \
-php8.4-xsl \
-php8.4-xml \
-php8.4-intl \
-php8.4-opcache \
-php8.4-imagick \
-php8.4-dev \
-php8.4-curl \
-php8.4-ds \
-php8.4-mbstring \
-php8.4-bcmath \
-php8.4-gd \
-php8.4-pgsql \
-php8.4-amqp \
+php8.2-zip \
+php8.2-pdo \
+php8.2-mysql \
+php8.2-igbinary \
+php8.2-redis \
+php8.2-apcu \
+php8.2-fpm \
+php8.2-dom \
+php8.2-xsl \
+php8.2-xml \
+php8.2-intl \
+php8.2-opcache \
+php8.2-imagick \
+php8.2-dev \
+php8.2-curl \
+php8.2-ds \
+php8.2-mbstring \
+php8.2-bcmath \
+php8.2-gd \
+php8.2-pgsql \
+php8.2-amqp \
 redis-server;
 ```
 
@@ -160,8 +160,8 @@ phpize
 make
 sudo make install
 
-sudo ln -s /etc/php/8.4/mods-available/imagick.ini /etc/php/8.4/fpm/conf.d/20-imagick.ini
-sudo ln -s /etc/php/8.4/mods-available/imagick.ini /etc/php/8.4/cli/conf.d/20-imagick.ini
+sudo ln -s /etc/php/8.2/mods-available/imagick.ini /etc/php/8.2/fpm/conf.d/20-imagick.ini
+sudo ln -s /etc/php/8.2/mods-available/imagick.ini /etc/php/8.2/cli/conf.d/20-imagick.ini
 ```
 
 ### Mozjpeg
@@ -229,44 +229,106 @@ setfacl -R -m u:"$HTTPDUSER":rwX -m u:app:rwX /home/app/amananet/backend/var \
 /home/app/amananet/backend/public/media /home/app/amananet/backend/public/uploads
 ```
 
-## Elasticsearch
+## Machine Learning Environment Setup
+### Install Python and pip
 ```bash
-curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elastic.gpg
-echo "deb [signed-by=/usr/share/keyrings/elastic.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
 sudo apt update
-sudo apt install -y elasticsearch
-sudo systemctl enable elasticsearch
-sudo systemctl start elasticsearch
-sudo ufw allow 9200
+sudo apt install -y python3 python3-pip python3-venv
 ```
-Update password
-`usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic`
-Add set memory limits
-`/etc/elasticsearch/jvm.options.d`
-
-## System Libraries for PDF Generation
+### Create and activate a virtual environment
 ```bash
-sudo apt install -y \
-gconf-service libasound2 libatk1.0-0 libatk-bridge2.0-0 libc6 libcairo2 libcups2 \
-libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 \
-libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libx11-6 libx11-xcb1 libxcb1 \
-libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 \
-libxrender1 libxss1 libxtst6 libgbm1 ca-certificates fonts-liberation lsb-release xdg-utils wget
+cd /home/app/stefa/backend
+python3 -m venv venv
+source venv/bin/activate
 ```
-Ensure Node.js version 12 is installed:
+### Install Python dependencies
 ```bash
-nvm install 12
-nvm use 12
-node -v
+pip install --upgrade pip
+pip install face_recognition scikit-learn numpy pillow imagehash
 ```
-Expected output: v12.x.x
-
-### Install Node.js packages:
+### Install additional libraries
 ```bash
-cd ~/amananet/backend/order_invoice
-npm install
+sudo apt install -y build-essential cmake libopenblas-dev liblapack-dev libx11-dev libgtk-3-dev libboost-all-dev
+```
+### Scripts overview
+`hashes.py` Calculates image perceptual hashes (aHash, pHash, dHash, wHash) using Pillow and ImageHash
+
+`recognize.py` Extracts facial encodings from an image
+
+`predict.py` Predicts the most likely match for a face encoding using a trained KNN model
+
+`train.py` Trains a KNN classifier on preprocessed face encodings and saves the model to disk
+
+## Metabase setup
+### Install Java
+```bash
+sudo apt update
+sudo apt install -y openjdk-17-jre
+```
+Create a directory for Metabase
+```bash
+sudo mkdir -p /opt/metabase
+sudo useradd -r -s /bin/false metabase
+sudo chown metabase:metabase /opt/metabase
 ```
 
+### Download and configure Metabase
+```bash
+sudo wget https://downloads.metabase.com/v0.50.5/metabase.jar -O /opt/metabase/metabase.jar
+sudo chown metabase:metabase /opt/metabase/metabase.jar
+```
+
+### Create a systemd service
+```bash
+sudo nano /etc/systemd/system/metabase.service
+```
+Paste the following content:
+```bash
+[Unit]
+Description=Metabase Analytics
+After=network.target
+
+[Service]
+User=metabase
+ExecStart=/usr/bin/java -jar /opt/metabase/metabase.jar
+Environment="MB_DB_FILE=/opt/metabase/metabase.db"
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+Then start and enable the service:
+```bash
+Then start and enable the service:
+sudo systemctl daemon-reload
+sudo systemctl enable metabase
+sudo systemctl start metabase
+```
+### Access Metabase
+Metabase runs on port 3000 by default.
+```bash
+http://your-server-ip:3000
+```
+
+## Headless Chromium Setup
+The backend uses Headless Chrome for web scraping and parsing tasks (triggered by Symfony commands like persons:parse:daily).
+### Install Chromium and dependencies
+```bash
+sudo apt update
+sudo apt install -y chromium-browser chromium-driver fonts-liberation
+sudo apt install -y libx11-dev libnss3 libxss1 libappindicator3-1 libatk-bridge2.0-0 libgtk-3-0
+```
+### Verify installation
+```bash
+chromium-browser --version
+chromedriver --version
+```
+### Configure environment variables 
+```bash
+CHROME_BIN=/usr/bin/chromium-browser
+CHROMEDRIVER_PATH=/usr/bin/chromedriver
+PARSING_SITE_URL=https://example.com
+```
 ## Project Setup
 
 ### Git setup
@@ -283,10 +345,3 @@ git checkout -b main --track origin/main
 ### Install dependencies, run migrations, and clear cache
 `make install`
 
-## Symfony Commands
-
-### Create an admin user
-`bin/console user:create:admin -u admin@amananet.com -p "<password>"`
-
-### Generate sitemaps
-`bin/console sitemap:generate`
