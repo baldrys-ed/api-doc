@@ -272,7 +272,7 @@ sudo useradd -r -s /bin/false metabase
 sudo chown metabase:metabase /opt/metabase
 ```
 
-### Download and configure Metabase
+Download and configure Metabase
 ```bash
 sudo wget https://downloads.metabase.com/v0.50.5/metabase.jar -O /opt/metabase/metabase.jar
 sudo chown metabase:metabase /opt/metabase/metabase.jar
@@ -311,7 +311,7 @@ http://your-server-ip:3000
 ```
 
 ## Headless Chromium Setup
-The backend uses Headless Chrome for web scraping and parsing tasks (triggered by Symfony commands like persons:parse:daily).
+The backend uses Headless Chrome for web scraping and parsing tasks (triggered by Symfony commands like `bin/console persons:parse:daily`).
 ### Install Chromium and dependencies
 ```bash
 sudo apt update
@@ -340,7 +340,14 @@ git checkout -b main --track origin/main
 ```
 
 ### Create necessary directories
-`mkdir -p public/uploads public/media var`
+```bash
+mkdir -p backend/public/uploads \
+backend/public/media \
+backend/var \
+backend/model/face/train \
+backend/persons \
+backend/media
+```
 
 ### Install dependencies, run migrations, and clear cache
 `make install`
